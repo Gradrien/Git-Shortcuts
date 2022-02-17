@@ -1,0 +1,33 @@
+#!/bin/bash
+RED=$'\e[1;31m'
+GREEN=$'\e[1;32m'
+WHITE=$'\e[1;37m'
+NC=$'\033[0m'
+if [ "$#" -ne 1 ]; then
+  echo "${WHITE}Usage: gcos FILENAME" >&1
+  exit
+fi
+while [ $# -ne 0 ]; do
+  git add "$1"
+  echo "${GREEN}$1 successfully added${NC}"
+  shift
+done
+while true; do
+    read -p "${WHITE}Do you want to commit your changes ? [Yy] or [Nn] : " yn
+    case $yn in
+        [Yy]* ) read -p "Enter your commit message: ${NC}" msg
+                git commit -m "[COD.STY] :zap: --> $msg"; break;;
+        [Nn]* ) echo "${RED}No message entered"; exit;;
+        * ) echo "${RED}No message entered"; exit;;
+    esac
+done
+while true; do
+    read -p "${WHITE}Do you want to push your changes ? [Yy] or [Nn] : ${NC}" yn
+    case $yn in
+        [Yy]* ) echo "${GREEN}"
+                git push; break;;
+        [Nn]* ) echo "${RED}Commit(s) not pushed"; exit;;
+        * ) echo "${RED}Commit(s) not pushed"; exit;;
+    esac
+done
+exit
