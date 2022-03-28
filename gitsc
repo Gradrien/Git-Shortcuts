@@ -1,0 +1,105 @@
+#!/bin/bash
+#Types of commit message
+commit+=("[ADD]" "[MODIFY]" "[COD.STY]" "[FIX]" "[HANDLE]" "[INCLUDE]" "[LIB]" "[REMOVE]" "[UNIT.TESTS]")
+# info_commit+=("Adding a new feature" "Modifying a functionnality" "Fixing the coding style" "Fixing a feature" \
+#  "Handling a new feature" "Including new things in the header" "Modifying a library", "Removing a functionnality", "Adding tests to your code")
+#Get modified files
+mod=($({ git diff --name-only ; git diff --name-only --staged ; } | sort | uniq))
+#Get untracked files
+unt=($(git ls-files --other --exclude-standard))
+#Get all files
+all_files=($(git ls-files))
+if [ "$#" = 1 ] && [ "$1" = "." ]; then
+  echo "Usage: gitsc ."
+fi
+#Pre-processing
+for (( i=0; i<${#mod[@]}; ++i)); do
+    data+=( "${mod[$i]}" )
+done
+for (( i=0; i<${#unt[@]}; ++i)); do
+    data+=( "${unt[$i]}" )
+done
+if (( ${#data[@]} % 2 == 0 )) ; then
+  data+=( "This file can't be added your current repository" )
+fi
+if (( ${#all_files[@]} % 2 == 0 )) ; then
+  all_files+=( "This file can't be added your current repository" )
+fi
+#Commit type interface
+commitchose=$(zenity --list --window-icon=GitShortcut.png --title='Git Shortcuts' --text="Choose commit type" \
+--width=600 --height=350 --column='Choose your' "${commit[@]}" --radiolist --column=' commit type' "${commit[@]}" )
+if [ $? != 0 ] ; then
+  exit
+fi
+
+#File interface
+if [ "$#" != 1 ] ; then
+  if [ $commitchose != [REMOVE] ] ; then
+    filechose=$(zenity --list --window-icon=GitShortcut.png --separator=" " --title='Git Shortcuts' --text="Choose file(s) to add" \
+    --width=600 --height=600  --checklist --column='Add' "${data[@]}"  --column='File name' "${data[@]}")
+  elif [ $commitchose = [REMOVE] ] ; then
+    filechose=$(zenity --list --window-icon=GitShortcut.png --separator=" " --title='Git Shortcuts' --text="Choose file(s) to remove" \
+    --width=600 --height=600  --checklist --column='Add' "${all_files[@]}"  --column='File name' "${all_files[@]}")
+  fi
+fi
+if [ $? != 0 ] ; then
+  exit
+fi
+
+#Commit message interface
+ask=$(zenity --entry --window-icon=GitShortcut.png --title='Git Shortcuts' --text="Type your commit message" \
+--width=600 --height=120)
+if [ $? != 0 ] ; then
+  zenity --warning --title='Git Shortcuts' --text="File(s) not added" --width=150 --height=120
+  exit
+fi
+
+# Git add .
+if [ "$#" = 1 ] && [ "$1" = "." ]; then
+  if [ $commitchose != [REMOVE] ] ; then
+    git add .
+  elif [ $commitchose = [REMOVE] ] ; then
+    git rm .
+  else
+    exit
+  fi
+else
+  # Git add command
+  if [ $commitchose != [REMOVE] ] ; then
+    for (( i=0; i<${#filechose[@]}; ++i)); do
+      git add ${filechose[i]}
+    done
+  elif [ $commitchose = [REMOVE] ] ; then
+    for (( i=0; i<${#filechose[@]}; ++i)); do
+      git rm ${filechose[i]}
+    done
+  else
+    exit
+  fi
+fi
+
+#Commit message selection
+if [ "$commitchose" = "[ADD]" ]; then
+    git commit -m "[ADD] :rocket: --> $ask"
+elif [ "$commitchose" = "[MODIFY]" ]; then
+    git commit -m "[MODIFY] :sparkles: --> $ask"
+elif [ "$commitchose" = "[COD.STY]" ]; then
+    git commit -m "[COD.STY] :zap: --> $ask"
+elif [ "$commitchose" = "[FIX]" ]; then
+    git commit -m "[FIX] :bug: --> $ask"
+elif [ "$commitchose" = "[HANDLE]" ]; then
+    git commit -m "[HANDLE] :sparkles: --> $ask"
+elif [ "$commitchose" = "[INCLUDE]" ]; then
+    git commit -m "[INCLUDE] :wrench: --> $ask"
+elif [ "$commitchose" = "[LIB]" ]; then
+    git commit -m "[LIB] :wrench: --> $ask"
+elif [ "$commitchose" = "[REMOVE]" ]; then
+    git commit -m "[REMOVE] :fire: --> $ask"
+elif [ "$commitchose" = "[UNIT.TESTS]" ]; then
+    git commit -m "[UNIT.TESTS] :white_check_mark: --> $ask"
+else
+  exit
+fi
+git push
+
+#faire une opt git add .
