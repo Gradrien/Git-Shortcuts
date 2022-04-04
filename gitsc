@@ -40,6 +40,9 @@ if [ "$#" != 1 ] ; then
   elif [ $commitchose = [REMOVE] ] ; then
     filechose=$(zenity --list --window-icon=GitShortcut.png --separator=" " --title='Git Shortcuts' --text="Choose file(s) to remove" \
     --width=600 --height=600  --checklist --column='Add' "${all_files[@]}"  --column='File name' "${all_files[@]}")
+  else
+    zenity --error --width=200 --height=100 --text="You must specify a commit type"
+  exit
   fi
 fi
 if [ $? != 0 ] ; then
@@ -101,5 +104,3 @@ else
   exit
 fi
 git push
-
-#faire une opt git add .
