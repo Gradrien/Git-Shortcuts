@@ -1,6 +1,6 @@
 #!/bin/bash
 #Types of commit message
-commit+=("[ADD]" "[MODIFY]" "[COD.STY]" "[FIX]" "[HANDLE]" "[INCLUDE]" "[LIB]" "[REMOVE]" "[UNIT.TESTS]")
+commit+=("[ADD]" "[MODIFY]" "[COD.STY]" "[FIX]" "[HANDLE]" "[INCLUDE]" "[LIB]" "[REMOVE]" "[UNIT.TESTS]" "[MERGE]" "CommitNorm")
 # info_commit+=("Adding a new feature" "Modifying a functionnality" "Fixing the coding style" "Fixing a feature" \
 #  "Handling a new feature" "Including new things in the header" "Modifying a library", "Removing a functionnality", "Adding tests to your code")
 #Get modified files
@@ -34,10 +34,13 @@ fi
 
 #File interface
 if [ "$#" != 1 ] ; then
-  if [ $commitchose != [REMOVE] ] ; then
+  if [ $commitchose = "CommitNorm" ] ; then
+    zenity --error --width=200 --height=100 --text="You must choose a commit type"
+    exit
+  elif [ $commitchose != "[REMOVE]" ] ; then
     filechose=$(zenity --list --window-icon=GitShortcut.png --separator=" " --title='Git Shortcuts' --text="Choose file(s) to add" \
     --width=600 --height=600  --checklist --column='Add' "${data[@]}"  --column='File name' "${data[@]}")
-  elif [ $commitchose = [REMOVE] ] ; then
+  elif [ $commitchose = "[REMOVE]" ] ; then
     filechose=$(zenity --list --window-icon=GitShortcut.png --separator=" " --title='Git Shortcuts' --text="Choose file(s) to remove" \
     --width=600 --height=600  --checklist --column='Add' "${all_files[@]}"  --column='File name' "${all_files[@]}")
   else
@@ -100,6 +103,8 @@ elif [ "$commitchose" = "[REMOVE]" ]; then
     git commit -m "[REMOVE] :fire: --> $ask"
 elif [ "$commitchose" = "[UNIT.TESTS]" ]; then
     git commit -m "[UNIT.TESTS] :white_check_mark: --> $ask"
+elif [ "$commitchose" = "[MERGE]" ]; then
+    git commit -m "[MERGE] :twisted_rightwards_arrows: --> $ask"
 else
   exit
 fi
