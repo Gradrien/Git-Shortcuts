@@ -108,4 +108,10 @@ elif [ "$commitchose" = "[MERGE]" ]; then
 else
   exit
 fi
-git push
+push=$(zenity --question --window-icon=GitShortcut.png --title='Git Shortcuts' --text="Do you want to push" \
+--width=600 --height=120)
+if [ $? != 0 ] ; then
+  exit
+else
+  git push
+fi
