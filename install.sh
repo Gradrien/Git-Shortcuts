@@ -1,4 +1,6 @@
 #!/bin/bash
+git clone git@github.com:Gradrien/Git-Shortcuts.git $HOME/Git-Shortcuts
+sleep 1
 echo "Creating link with zsh"
 sed -i '/export PATH=/ s/$/$HOME\/\Git-Shortcuts:/' ~/.zshrc
 sleep 1
