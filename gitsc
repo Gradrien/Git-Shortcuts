@@ -1,7 +1,7 @@
 #!/bin/bash
 gitcmd=add
 # Parsing commit types
-INPUT=gitsc.conf
+INPUT=$HOME/Git-Shortcuts/gitsc.conf
 OLDIFS=$IFS
 IFS=','
 [ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 22; }
