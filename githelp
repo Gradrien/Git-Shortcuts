@@ -11,6 +11,8 @@ gitsc is a shell program which facilitates Github commands.
 .SH
 .SH --help
 Redirect to this man page.
+.SH --log
+Generate a PDF file with the commits log.
 .SH --all and .
 Add or delete all modified and untracked files from your local repository to your remote repository.
 .SH BUGS
