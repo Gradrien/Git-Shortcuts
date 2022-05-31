@@ -1,117 +1,179 @@
 #!/bin/bash
-gitcmd=add
-# Parsing commit types
-INPUT=$HOME/Git-Shortcuts/gitsc.conf
-OLDIFS=$IFS
-IFS=','
-[ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 22; }
-while read line emoji status; do
-    commit+=( "$line" )
-    gitmoji+=( "$emoji" )
-    status_type+=( "$status" )
-done < $INPUT
-IFS=$OLDIFS
-
-# Get modified files
-mod=($({ git diff --name-only ; git diff --name-only --staged ; } | sort | uniq))
-
-# Get untracked files
-unt=($(git ls-files --other --exclude-standard))
-
-# Get all files
-all_files=($(git ls-files))
-if [ $? != 0 ]; then
-  clear
-  echo "Not a git repository"
-  exit
-fi
-if [ "$#" = 1 ] && [ "$1" = "--help" ]; then
-  echo "Usage: gitsc --help"
-  exit 0
-fi
-if [ "$#" = 1 ] && [ "$1" != "." ] && [ "$1" != "--all" ]; then
-  echo "Usage: gitsc or gitsc ."
-  exit 1
-fi
-
-# Pre-processing
-for (( i=0; i<${#mod[@]}; ++i)); do
-    data+=( "${mod[$i]}" )
-done
-for (( i=0; i<${#unt[@]}; ++i)); do
-    data+=( "${unt[$i]}" )
-done
-if (( ${#commit[@]} % 2 == 0 )) ; then
-  commit+=( "GitShortcuts" )
-fi
-if (( ${#data[@]} % 2 == 0 )) ; then
-  data+=( "This file can't be added to your repository" )
-fi
-if (( ${#all_files[@]} % 2 == 0 )) ; then
-  all_files+=( "This file can't be added to your repository" )
-fi
-
-# Commit type interface
-commitchose=$(zenity --list --title='Git Shortcuts' --text="Choose commit type" \
---width=600 --height=350 --column='Choose your' "${commit[@]}" --radiolist --column=' commit type' "${commit[@]}" )
-if [ $? != 0 ] ; then
-  exit
-fi
-
-# File interface
-if [ "$#" != 1 ] ; then
-  if [ "$commitchose" != [REMOVE] ] && [ "$commitchose" != "GitShortcuts" ]; then
-    filechose=$(zenity --list --separator=" " --title='Git Shortcuts' --text="Choose file(s) to add" \
-    --width=600 --height=600  --checklist --column='Add' "${data[@]}"  --column='File name' "${data[@]}")
-  elif [ "$commitchose" = [REMOVE] ]  && [ "$commitchose" != "GitShortcuts" ]; then
-    filechose=$(zenity --list --separator=" " --title='Git Shortcuts' --text="Choose file(s) to remove" \
-    --width=600 --height=600  --checklist --column='Add' "${all_files[@]}"  --column='File name' "${all_files[@]}")
-  else
-    zenity --error --width=200 --height=100 --text="You must specify a commit type"
-  exit
+check_version() {
+  last_ref=$(git rev-parse --short origin/main)
+  cur_ref=$(git rev-parse --short HEAD)
+  if [ "$cur_ref" != "$last_ref" ]; then
+    read -p "gitsc: An update is available to you want to download the latest version ? [Yy] or [Nn] " response
+    case $response in
+            [Yy]* ) git pull; exit;;
+            [Nn]* ) echo "Update not installed";;
+            * ) echo "Update not installed";;
+    esac
   fi
-fi
-if [ $? != 0 ] ; then
-  exit
-fi
+}
 
-# Commit message interface
-ask=$(zenity --entry --title='Git Shortcuts' --text="Type your commit message" \
---width=600 --height=120)
-if [ $? != 0 ] ; then
-  zenity --warning --title='Git Shortcuts' --text="File(s) not added" --width=150 --height=120
-  exit
-fi
+parsing_configuration_file() {
+  # Parsing commit types
+  INPUT=$HOME/Git-Shortcuts/gitsc.conf
+  OLDIFS=$IFS
+  IFS=','
+  [ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 22; }
+  while read line emoji status; do
+      commit+=( "$line" )
+      gitmoji+=( "$emoji" )
+      status_type+=( "$status" )
+  done < $INPUT
+  IFS=$OLDIFS
+}
 
-# Choose add/remove command
-for (( i=0; i<${#commit[@]}; ++i)); do
-  if [ "${commit[$i]}" = "$commitchose" ] ; then
-  gitcmd="${status_type[$i]}"
+get_files() {
+  # Get modified files
+  mod=($({ git diff --name-only ; git diff --name-only --staged ; } | sort | uniq))
+
+  # Get untracked files
+  unt=($(git ls-files --other --exclude-standard))
+
+  # Get all files
+  all_files=($(git ls-files))
+}
+
+check_repository() {
+  if [ $? != 0 ]; then
+    clear
+    echo "Not a git repository"
+    exit
   fi
-done
+}
 
-# Git add/rm .
-if [ "$#" = 1 ] && [ "$1" = "." ] || [ "$1" = "--all" ]; then
-    git $gitcmd .
-else
-  # Git add/rm command
-  for (( i=0; i<${#filechose[@]}; ++i)); do
-    git $gitcmd ${filechose[i]}
+fill_arrays() {
+  # Pre-processing
+  for (( i=0; i<${#mod[@]}; ++i)); do
+      data+=( "${mod[$i]}" )
   done
-fi
-
-# Commit message selection
-for (( i=0; i<${#commit[@]}; ++i)); do
-  if [ "${commit[$i]}" = "$commitchose" ] ; then
-   git commit -m "${commit[$i]} ${gitmoji[$i]} --> $ask"
+  for (( i=0; i<${#unt[@]}; ++i)); do
+      data+=( "${unt[$i]}" )
+  done
+  if (( ${#commit[@]} % 2 == 0 )) ; then
+    commit+=( "GitShortcuts" )
   fi
-done
+  if (( ${#data[@]} % 2 == 0 )) ; then
+    data+=( "This file can't be added to your repository" )
+  fi
+  if (( ${#all_files[@]} % 2 == 0 )) ; then
+    all_files+=( "This file can't be added to your repository" )
+  fi
+}
 
-# Git push
-push=$(zenity --question --title='Git Shortcuts' --text="Do you want to push" \
---width=300 --height=120)
-if [ $? != 0 ] ; then
-  exit
-else
-  git push
-fi
+gitsc_options() {
+  if [ "$#" = 1 ] && [ "$1" = "--log" ]; then
+    git shortlog > gitlog.txt
+    enscript -p gitlog.ps gitlog.txt
+    ps2pdf gitlog.ps gitlog.pdf
+    rm *gitlog.txt* *gitlog.ps*
+    echo "gitsc: Successfuly generated PDF file."
+    exit 0
+  fi
+  if [ "$#" = 1 ] && [ "$1" = "--help" ]; then
+    man gitsc
+    exit 0
+  fi
+  if [ "$#" = 1 ] && [ "$1" != "." ] && [ "$1" != "--all" ]; then
+    echo "gitsc: Invalid option. Try gitsc --help for more informations"
+    exit 1
+  fi
+}
+
+choose_commit() {
+  # Commit type interface
+  commitchose=$(zenity --list --title='Git Shortcuts' --text="Choose commit type" \
+  --width=600 --height=350 --column='Choose your' "${commit[@]}" --radiolist --column=' commit type' "${commit[@]}" )
+  if [ $? != 0 ] ; then
+    exit
+  fi
+}
+
+choose_file() {
+  # File interface
+  if [ "$#" != 1 ] ; then
+    if [ "$commitchose" != [REMOVE] ] && [ "$commitchose" != "GitShortcuts" ]; then
+      filechose=$(zenity --list --separator=" " --title='Git Shortcuts' --text="Choose file(s) to add" \
+      --width=600 --height=600  --checklist --column='Add' "${data[@]}"  --column='File name' "${data[@]}")
+    elif [ "$commitchose" = [REMOVE] ]  && [ "$commitchose" != "GitShortcuts" ]; then
+      filechose=$(zenity --list --separator=" " --title='Git Shortcuts' --text="Choose file(s) to remove" \
+      --width=600 --height=600  --checklist --column='Add' "${all_files[@]}"  --column='File name' "${all_files[@]}")
+    else
+      zenity --error --width=200 --height=100 --text="You must specify a commit type"
+    exit
+    fi
+  fi
+  if [ $? != 0 ] ; then
+    exit
+  fi
+}
+
+type_message() {
+  # Commit message interface
+  ask=$(zenity --entry --title='Git Shortcuts' --text="Type your commit message" \
+  --width=600 --height=120)
+  if [ $? != 0 ] ; then
+    zenity --warning --title='Git Shortcuts' --text="File(s) not added" --width=150 --height=120
+    exit
+  fi
+}
+
+git_add_or_remove() {
+  gitcmd='add'
+  # Choose add/remove command
+  for (( i=0; i<${#commit[@]}; ++i)); do
+    if [ "${commit[$i]}" = "$commitchose" ] ; then
+    gitcmd="${status_type[$i]}"
+    fi
+  done
+
+  # Git add/rm .
+  if [ "$#" = 1 ] && [ "$1" = "." ] || [ "$1" = "--all" ]; then
+      git $gitcmd .
+  else
+    # Git add/rm command
+    for (( i=0; i<${#filechose[@]}; ++i)); do
+      git $gitcmd ${filechose[i]}
+    done
+  fi
+}
+
+git_commit() {
+  # Commit message selection
+  for (( i=0; i<${#commit[@]}; ++i)); do
+    if [ "${commit[$i]}" = "$commitchose" ] ; then
+    git commit -m "${commit[$i]} ${gitmoji[$i]} --> $ask"
+    fi
+  done
+}
+
+git_push() {
+  # Git push
+  push=$(zenity --question --title='Git Shortcuts' --text="Do you want to push" \
+  --width=300 --height=120)
+  if [ $? != 0 ] ; then
+    exit
+  else
+    git push
+  fi
+}
+
+git_interaction() {
+  git_add_or_remove
+  git_commit
+  git_push
+}
+
+check_version
+parsing_configuration_file
+get_files
+fill_arrays
+check_repository
+gitsc_options
+choose_commit
+choose_file
+type_message
+git_interaction
