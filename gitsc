@@ -25,7 +25,11 @@ if [ $? != 0 ]; then
   echo "Not a git repository"
   exit
 fi
-if [ "$#" = 1 ] && [ "$1" != "." ]; then
+if [ "$#" = 1 ] && [ "$1" = "--help" ]; then
+  echo "Usage: gitsc --help"
+  exit 0
+fi
+if [ "$#" = 1 ] && [ "$1" != "." ] && [ "$1" != "--all" ]; then
   echo "Usage: gitsc or gitsc ."
   exit 1
 fi
@@ -87,7 +91,7 @@ for (( i=0; i<${#commit[@]}; ++i)); do
 done
 
 # Git add/rm .
-if [ "$#" = 1 ] && [ "$1" = "." ]; then
+if [ "$#" = 1 ] && [ "$1" = "." ] || [ "$1" = "--all" ]; then
     git $gitcmd .
 else
   # Git add/rm command

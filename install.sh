@@ -7,6 +7,9 @@ sleep 1
 echo "Link created"
 #Insatllation
 sleep 1
+echo "Installing manual entry"
+sudo cp githelp /usr/share/man/man1/githelp.1
+sudo gzip /usr/share/man/man1/githelp.1
 echo "Checking your packages"
 sleep 1
 pkg="zenity"

@@ -1,1 +1,19 @@
-xdg-open https://github.com/Gradrien/Git-Shortcuts/blob/main/README.md;
+.\" Manpage for gitsc.
+.\" Contact adrien.ricou@epitech.eu to correct errors or typos.
+.TH man 1 "30 May 2022" "1.0" "gitsc man page"
+.SH NAME
+gitsc \- Shortcut tool for Github commands.
+.SH SYNOPSIS
+gitsc [--help] [.]
+.SH DESCRIPTION
+gitsc is a shell program which facilitates Github commands.
+.SH OPTIONS
+.SH
+.SH --help
+Redirect to this man page.
+.SH --all and .
+Add or delete all modified and untracked files from your local repository to your remote repository.
+.SH BUGS
+No known bugs.
+.SH AUTHOR
+Adrien Ricou (github.com/Gradrien)
