@@ -6,7 +6,7 @@ zenity_pkg='zenity'
 if [ -f /etc/os-release ]; then
     # freedesktop.org and systemd
     . /etc/os-release
-    OS=$NAME
+    OS=$ID
     VER=$VERSION_ID
 elif type lsb_release >/dev/null 2>&1; then
     # linuxbase.org
@@ -36,7 +36,7 @@ fi
 # Select the package manager
 if [ "$OS" = "Debian" ] || [ "$OS" = "Ubuntu" ] || [ "$OS" = "Linux Mint" ]; then
   PM='apt-get'
-elif [ "$OS" = "Fedora" ] || [ "$OS" = "CentOS" ] || [ "$OS" = "RHEL" ]; then
+elif [ "$OS" = "fedora" ] || [ "$OS" = "CentOS" ] || [ "$OS" = "RHEL" ]; then
   PM='dnf'
 elif [ "$OS" = "Arch Linux" ]; then
   PM='pacman'
