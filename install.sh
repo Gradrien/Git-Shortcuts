@@ -34,11 +34,11 @@ else
 fi
 
 # Select the package manager
-if [ $OS = "Debian" ] || [ $OS = "Ubuntu" ] || [ $OS = "Linux Mint" ]; then
+if [ "$OS" = "Debian" ] || [ "$OS" = "Ubuntu" ] || [ "$OS" = "Linux Mint" ]; then
   PM='apt-get'
-elif [ $OS = "Fedora" ] || [ $OS = "CentOS" ] || [ $OS = "RHEL" ]; then
+elif [ "$OS" = "Fedora" ] || [ "$OS" = "CentOS" ] || [ "$OS" = "RHEL" ]; then
   PM='dnf'
-elif [ $OS = "Arch Linux" ]; then
+elif [ "$OS" = "Arch Linux" ]; then
   PM='pacman'
 else
   echo "gitsc: Can't find a package manager"
