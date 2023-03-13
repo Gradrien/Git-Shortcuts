@@ -7,6 +7,18 @@ gitsc \- Shortcut tool for Github commands.
 gitsc [--help] [.]
 .SH DESCRIPTION
 gitsc is a shell program which facilitates Github commands.
+.SH CONFIGURATION
+Git-Shortcuts provides a configuration file which you can update to your needs to add your own commit norm.
+.LP
+To add your own commit norm, you have to add a new line in the configuration file with the following syntax:
+.LP
+YOUR COMMIT NORM,A_GITMOJI,[add|rm]
+.SH EXAMPLES
+[ADD],:rocket:,add
+.LP
+Add a new feature with the rocket emoji and the [ADD] tag.
+.LP
+Please take a look at the Gitmoji website to find the emoji you want to use.
 .SH OPTIONS
 .SH
 .SH --help
