@@ -172,6 +172,8 @@ get_files
 fill_arrays
 check_repository
 choose_commit
-choose_file
+if [ "$#" != 1 ] ; then
+  choose_file
+fi
 type_message
 git_interaction
