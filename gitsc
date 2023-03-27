@@ -133,6 +133,17 @@ git_commit() {
   done
 }
 
+git_pull() {
+  # Git push
+  push=$(zenity --question --title='Git Shortcuts' --text="Do you want to pull before pushing" \
+  --width=300 --height=120)
+  if [ $? != 0 ] ; then
+    return
+  else
+    git pull
+  fi
+}
+
 git_push() {
   # Git push
   push=$(zenity --question --title='Git Shortcuts' --text="Do you want to push" \
@@ -147,6 +158,7 @@ git_push() {
 git_interaction() {
   git_add_or_remove
   git_commit
+  git_pull
   git_push
 }
 
