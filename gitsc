@@ -30,7 +30,7 @@ parsing_configuration_file() {
 
 get_files() {
   # Get modified files
-  mod=($({ git diff --name-only ; git diff --name-only --staged ; } | sort | uniq))
+  mod=($(git diff --name-only ; git diff --name-only --staged | sort | uniq))
 
   # Get untracked files
   unt=($(git ls-files --other --exclude-standard))
@@ -105,21 +105,21 @@ type_message() {
 }
 
 git_add_or_remove() {
-  gitcmd='add'
-  # Choose add/remove command
-  for (( i=0; i<${#commit[@]}; ++i)); do
-    if [ "${commit[$i]}" = "$commitchose" ] ; then
-    gitcmd="${status_type[$i]}"
-    fi
-  done
+  # gitcmd='add'
+  # # Choose add/remove command
+  # for (( i=0; i<${#commit[@]}; ++i)); do
+  #   if [ "${commit[$i]}" = "$commitchose" ] ; then
+  #   gitcmd="${status_type[$i]}"
+  #   fi
+  # done
 
   # Git add/rm .
   if [ "$#" = 1 ] && [ "$1" = "." ] || [ "$1" = "--all" ]; then
-      git $gitcmd .
+      git add .
   else
     # Git add/rm command
     for (( i=0; i<${#filechose[@]}; ++i)); do
-      git $gitcmd ${filechose[i]}
+      git add ${filechose[i]}
     done
   fi
 }
@@ -156,9 +156,9 @@ git_push() {
 }
 
 git_interaction() {
-  git_add_or_remove
-  git_commit
   git_pull
+  git_add_or_remove $1
+  git_commit
   git_push
 }
 
@@ -188,4 +188,4 @@ if [ "$#" != 1 ] ; then
   choose_file
 fi
 type_message
-git_interaction
+git_interaction $1

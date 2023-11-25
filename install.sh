@@ -1,55 +1,43 @@
 #!/bin/bash
+
 enscript_pkg='enscript'
 zenity_pkg='zenity'
 
-# Find the current os
-if [ -f /etc/os-release ]; then
-    # freedesktop.org and systemd
-    . /etc/os-release
-    OS=$ID
-    VER=$VERSION_ID
-elif type lsb_release >/dev/null 2>&1; then
-    # linuxbase.org
-    OS=$(lsb_release -si)
-    VER=$(lsb_release -sr)
-elif [ -f /etc/lsb-release ]; then
-    # For some versions of Debian/Ubuntu without lsb_release command
-    . /etc/lsb-release
-    OS=$DISTRIB_ID
-    VER=$DISTRIB_RELEASE
-elif [ -f /etc/debian_version ]; then
-    # Older Debian/Ubuntu/etc.
-    OS=Debian
-    VER=$(cat /etc/debian_version)
-elif [ -f /etc/SuSe-release ]; then
-    # Older SuSE/etc.
-    ...
-elif [ -f /etc/redhat-release ]; then
-    # Older Red Hat, CentOS, etc.
-    ...
+# Check for package managers
+if command -v apt-get &> /dev/null; then
+    PACKAGE_MANAGER="apt-get"
+elif command -v yum &> /dev/null; then
+    PACKAGE_MANAGER="yum"
+elif command -v pacman &> /dev/null; then
+    PACKAGE_MANAGER="pacman"
+elif command -v dnf &> /dev/null; then
+    PACKAGE_MANAGER="dnf"
+elif command -v zypper &> /dev/null; then
+    PACKAGE_MANAGER="zypper"
+elif command -v brew &> /dev/null; then
+    PACKAGE_MANAGER="brew"
+elif command -v port &> /dev/null; then
+    PACKAGE_MANAGER="port"
+elif command -v emerge &> /dev/null; then
+    PACKAGE_MANAGER="emerge"
+elif command -v apk &> /dev/null; then
+    PACKAGE_MANAGER="apk"
+elif command -v pkg &> /dev/null; then
+    PACKAGE_MANAGER="pkg"
+elif command -v opkg &> /dev/null; then
+    PACKAGE_MANAGER="opkg"
+elif command -v slackpkg &> /dev/null; then
+    PACKAGE_MANAGER="slackpkg"
+elif command -v paru &> /dev/null; then
+    PACKAGE_MANAGER="paru"
 else
-    # Fall back to uname, e.g. "Linux <version>", also works for BSD, etc.
-    OS=$(uname -s)
-    VER=$(uname -r)
-fi
-
-# Select the package manager
-if [ "$OS" = "Debian" ] || [ "$OS" = "Ubuntu" ] || [ "$OS" = "Linux Mint" ]; then
-  PM='apt-get'
-elif [ "$OS" = "fedora" ] || [ "$OS" = "CentOS" ] || [ "$OS" = "RHEL" ]; then
-  PM='dnf'
-elif [ "$OS" = "Arch Linux" ]; then
-  PM='pacman'
-else
-  echo "gitsc: Can't find a package manager"
-  exit 1
-fi
-
-#Clone the project to home
-if ! curl -fsSL https://github.com/Gradrien/Git-Shortcuts/archive/master.tar.gz | tar -xz --strip-components=1 -C $HOME/Git-Shortcuts; then
-    echo "Failed to clone the Git-Shortcuts project"
+    echo "Error: Unsupported package manager. Please install the required package manually."
     exit 1
 fi
+
+# Install your package using the determined package manager
+echo "Using $PACKAGE_MANAGER for package installation."
+
 sleep 1
 echo "Creating link with zsh"
 sed -i '/export PATH=/ s/$/$HOME\/\Git-Shortcuts:/' ~/.zshrc
@@ -74,7 +62,7 @@ install_package() {
         case $yn in
             [Yy]* )
                 echo "Installing package: $pkg"
-                sudo "$PM" install "$pkg"
+                sudo "$PACKAGE_MANAGER" install "$pkg"
                 ;;
             *)
                 echo "Package not installed"
